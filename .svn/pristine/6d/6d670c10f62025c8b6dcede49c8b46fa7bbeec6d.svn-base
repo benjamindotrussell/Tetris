@@ -1,0 +1,43 @@
+package view;
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JPanel;
+
+public class ScorePanel extends JPanel implements Observer{
+    /** field to hold the current score. */
+    private int myScore;
+    /** 
+     * class constructor.
+     */
+    public ScorePanel() {
+        super();
+        myScore = 0;
+    }
+    @Override 
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        final Graphics2D g2d = (Graphics2D) theGraphics;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                             RenderingHints.VALUE_ANTIALIAS_ON);
+        myScore++;
+        final String score = Integer.toString(myScore);
+        g2d.drawString("SCORE", 10, 20);
+        g2d.drawString(score, 60, 20);
+    }
+    @Override
+    public void update(final Observable arg0, final Object arg1) {
+        
+        repaint();
+    }
+    public int getMyScore() {
+        return myScore;
+    }
+    public void setMyScore(int theScore) {
+        myScore = theScore;
+    }
+}

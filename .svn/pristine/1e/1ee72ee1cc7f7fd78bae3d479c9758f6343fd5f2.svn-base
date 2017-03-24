@@ -1,0 +1,54 @@
+package view;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import model.Board;
+/**
+ * class that overrides KeyListener.
+ * 
+ * @author ben Russell
+ * @version 12/1/2015
+ */
+public class KeyPress implements KeyListener {
+    /** field for the board. */
+    private final Board myBoard; 
+    /**
+     * constructor.
+     * 
+     * @param theBoard the current instance of the board.
+     */
+    public KeyPress(final Board theBoard) {
+        super();
+        myBoard = theBoard;
+    }
+    @Override
+    public void keyPressed(final KeyEvent theEvent) {
+        
+        final int key = theEvent.getKeyCode();
+        if (key == KeyEvent.VK_LEFT) {
+            myBoard.moveLeft();
+        } else if (key == KeyEvent.VK_RIGHT) {
+            myBoard.moveRight();
+        } else if (key == KeyEvent.VK_DOWN) {
+            myBoard.moveDown();
+        } else if (key == KeyEvent.VK_UP) {
+            myBoard.rotate();
+        } else if (key == KeyEvent.VK_SPACE) {
+            myBoard.hardDrop();
+        }
+        
+        System.out.println(myBoard.toString());
+    }
+
+    @Override
+    public void keyReleased(final KeyEvent theE) {
+        
+    }
+
+    @Override
+    public void keyTyped(final KeyEvent theE) {
+        
+    }
+
+}

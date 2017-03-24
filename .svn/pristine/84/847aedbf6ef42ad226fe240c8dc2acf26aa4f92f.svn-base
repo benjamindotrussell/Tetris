@@ -1,0 +1,314 @@
+/*
+ * TCSS 305 - Project Tetris 
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.Timer;
+
+import model.Board;
+import model.Piece;
+
+/**
+ * this class implements the GUI.
+ * 
+ * @author Ben Russell
+ * @version 11/23/2015
+ */
+public class TetrisG implements Observer {
+    /** Initial time for the timer. */
+    private static final int INIT_DELAY = 500;
+    /** initial board width. */
+    private static final int INIT_WIDTH = 10;
+    /** initial board height. */
+    private static final int INIT_HEIGHT = 20;
+    /** constant for the size of the panel. */
+    private static final Dimension PANEL_SIZE = new Dimension(200, 500);
+    /** constant for the size of the panel. */
+    private static final Dimension GAME_PANEL_SIZE = new Dimension(200, 400);
+    /** constant for the size of the panel. */
+    private static final Dimension TITLE_PANEL_SIZE = new Dimension(200, 190);
+    /** constant for the size of the frame. */
+    private static final Dimension FRAME_SIZE = new Dimension(700, 700);
+    /** constant for the size of a label. */
+    private static final Dimension LABEL_SIZE = new Dimension(200, 50);
+    /** constant for the size of the preview panel. */
+    private static final Dimension PREVIEW_PANEL_SIZE = new Dimension(200, 200);
+    /** Timer that steps the game at a given interval. */
+    private final Timer myTimer;
+    public static int myTimeStep;
+    /** field to hold a instance of the tetris game. */
+    private final Board myTetris;
+    /** listener for key presses. */
+    private final KeyListener myKeyListener;
+    /** game panel. */
+    private final JPanel myPanel;
+    private final PreviewPanel myPreviewPanel;
+    public static int myCounter;
+    public static Piece myPiece;
+    /** 
+     * class constructor.
+     */
+    public TetrisG() {
+        myTetris = new Board(INIT_WIDTH, INIT_HEIGHT);
+        myPreviewPanel = new PreviewPanel(myTetris);
+        myTimer = new Timer(INIT_DELAY, null);
+        myKeyListener = new KeyPress(myTetris);
+        myPanel = new TetrisPanel(myTetris);
+        myTetris.addObserver(this);
+    }
+    /**
+     * starts the tetris program.
+     */
+    public void start() {
+        
+        final JFrame frame = new JFrame("!! Tetris 2000 !!");
+        final ImageIcon image = new ImageIcon("images/tetris-logo.jpg");
+        frame.setIconImage(image.getImage());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(FRAME_SIZE);
+        frame.setResizable(false);
+        frame.add(westPanel(), BorderLayout.WEST);
+        frame.add(eastPanel(), BorderLayout.EAST);
+        frame.setLocationRelativeTo(null);
+        frame.pack();
+        frame.setVisible(true);
+        
+        
+     
+        myTimer.addActionListener(new TimerAction());
+        myTimer.start();
+        frame.addKeyListener(myKeyListener);
+    }
+    /**
+     * set the tetris graphic on a label. 
+     * @return l the JLabel    
+     */
+    private JPanel tetrisGraphic() {
+        final JPanel p = new JPanel();
+        p.setBackground(Color.BLUE);
+        final ImageIcon image = new ImageIcon("images/tetris.png");
+        
+        final JLabel l = new JLabel("", image, JLabel.CENTER);        
+        p.setPreferredSize(TITLE_PANEL_SIZE);
+        p.add(l);
+        return p;
+    }
+    /**
+     * sets up a panel used to start a new game.
+     * 
+     * @return ng new game panel.
+     */
+    private JPanel newGame() {
+        final JPanel ng = new JPanel();
+        final JLabel l = new JLabel("NEW GAME", JLabel.CENTER);
+        ng.setBackground(Color.GREEN);
+        final MouseAdapter mouseAdapter = new NewGameMouseAdapter();
+        
+        l.addMouseListener(mouseAdapter);
+        ng.add(l);
+        return ng;
+    }
+    /**
+     * sets up a panel used to pause the game.
+     * 
+     * @return p pause panel.
+     */
+    private JPanel pause() {
+        final JPanel p = new JPanel();
+        final JLabel l = new JLabel("PAUSE", JLabel.CENTER);
+        p.setBackground(Color.BLUE);
+        p.add(l);
+        return p;
+    }
+    
+    /**
+     * sets up a panel used to display the high score.
+     * 
+     * @return hs high score panel.
+     */
+    private JPanel highScore() {
+        final JPanel hs = new JPanel();
+        final JLabel l = new JLabel("HighScore", JLabel.CENTER);
+        hs.setBackground(Color.ORANGE);
+        hs.add(l);
+        return hs;
+    }
+    /**
+     * sets up a panel used to preview the next block.
+     * 
+     * @return p preview panel.
+     */
+    private JPanel preview() {
+        
+        
+        myPreviewPanel.setPreferredSize(PREVIEW_PANEL_SIZE);
+        myPreviewPanel.setBackground(Color.LIGHT_GRAY);
+        
+        
+        return myPreviewPanel;
+    }
+    /**
+     * sets up a panel used to preview the next block.
+     * 
+     * @return p preview panel.
+     */
+    private JPanel keyInfo() {
+        final JPanel p = new JPanel();
+        final JTextArea t = new JTextArea("KEY INFO: " + "\n" + "Move Left: left arrow" + "\n" 
+        + "Move right: right arrow" + "\n" + "Move down: down arrow " + "\n" 
+                        + "Rotate: up arrow" + "\n" + "Hard drop: space bar");
+        t.setOpaque(false);
+        t.setFocusable(false);
+        t.setEditable(false);
+        p.setPreferredSize(PREVIEW_PANEL_SIZE);
+        p.setBackground(Color.YELLOW);
+        p.add(t);
+        return p;
+    }
+    /**
+     * sets up a panel used to preview the next block.
+     * 
+     * @return p preview panel.
+     */
+    private JPanel level() {
+        final JPanel p = new JPanel();
+        final JLabel l = new JLabel("LEVEL", JLabel.CENTER);
+       
+        p.setBackground(Color.CYAN);
+        p.add(l);
+        return p;
+    }
+    /**
+     * sets up a panel used to preview the next block.
+     * 
+     * @return p preview panel.
+     */
+    private JPanel lines() {
+        final JPanel p = new JPanel();
+        final JLabel l = new JLabel("LINES", JLabel.CENTER);
+        
+        p.setBackground(Color.BLUE);
+        p.add(l);
+        return p;
+    }
+    /**
+     * this panel will hold all the game mechanics buttons.
+     * @return p the JPanel
+     */
+    private JPanel eastPanel() {
+        final JPanel eastP = new JPanel();
+
+        //nest all of the panels into the east panel
+        eastP.add(tetrisGraphic()); 
+        eastP.add(newGame());
+        eastP.add(pause());
+        eastP.add(highScore()); 
+        eastP.add(preview());
+        eastP.add(keyInfo());
+        eastP.add(level());
+        eastP.add(lines());
+        
+        //configure the east panel
+        eastP.setLayout(new BoxLayout(eastP, BoxLayout.Y_AXIS));
+        eastP.setPreferredSize(PANEL_SIZE);
+        eastP.setSize(PANEL_SIZE);
+        eastP.setBackground(Color.YELLOW);
+        eastP.setVisible(true);
+        
+        return eastP;
+    }
+    /**
+     * sets up a panel used to show the current score.
+     * 
+     * @return s score panel.
+     */
+    private JPanel score() {
+        final JPanel s = new JPanel();
+        final JLabel l = new JLabel("SCORE", JLabel.CENTER);
+        s.setPreferredSize(LABEL_SIZE);
+        s.setBackground(Color.GRAY);
+        s.add(l);
+        return s;
+    }
+    /**
+     * this button will hold the visuals of the game.
+     * @return p the JPanel.
+     */
+    private JPanel westPanel() {
+        final JPanel westP = new JPanel();
+        
+        //final GamePanel game = new GamePanel();
+        //final ImageIcon i = new ImageIcon("images/Tetris background.jpg");
+        
+        myPanel.setPreferredSize(GAME_PANEL_SIZE);
+        myPanel.setBackground(Color.WHITE);
+        westP.setLayout(new BoxLayout(westP, BoxLayout.Y_AXIS));
+        westP.setSize(GAME_PANEL_SIZE);
+        //westP.add(score());
+        westP.add(myPanel);
+        
+        westP.setVisible(true);
+        
+        return westP;
+    }
+    @Override
+    public void update(final Observable theO, final Object theArg) {
+        
+        myPanel.repaint();
+        myPreviewPanel.repaint();
+        
+    }
+    /**
+     * inner class to initiate step when the timer signals an action performed.
+     * 
+     * @author Ben Russell
+     * @version 12/1/2015
+     */
+    private class TimerAction implements ActionListener {
+       
+
+        /** 
+         * when the timer signals an action this method steps the board forward and repaints 
+         * the GUI.
+         * @param theEvent the event triggered by the timer.
+         */
+        public void actionPerformed(final ActionEvent theEvent) {
+            
+            myTetris.step();
+            System.out.println(myTetris.toString());
+        }
+        
+    } 
+    
+    /** 
+     * inner class for the mouse listener.
+     * 
+     * @author ben russell
+     * @version 15/2/1/2015     *
+     */
+    public class NewGameMouseAdapter extends MouseAdapter {
+        @Override 
+        public void mousePressed(final MouseEvent theEvent) {            
+            myTetris.newGame(INIT_WIDTH, INIT_HEIGHT, null);
+            
+        }        
+    }
+   
+}
