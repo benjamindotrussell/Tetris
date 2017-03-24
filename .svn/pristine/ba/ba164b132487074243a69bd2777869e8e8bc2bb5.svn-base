@@ -1,0 +1,17 @@
+package view;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import model.Board;
+
+public class NewGameMouseAdapter extends MouseAdapter {
+    @Override 
+    public void mousePressed(final MouseEvent theEvent) {
+        final Board b = new Board(10, 10);
+        b.newGame(10, 10, null);
+        System.out.println(b.toString());
+        
+    }
+    
+}
